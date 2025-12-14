@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yönetim Portalı</title>
+    <title>Yönetim Portalı (Demo)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
+        /* TASARIM AYNEN KORUNDU */
         :root {
             --bg-body: #f8fafc;
             --bg-card: #ffffff; --bg-sidebar: #1e293b; --bg-input: #f1f5f9;
@@ -100,6 +101,10 @@
             .content-area { padding: 20px; }
             .top-bar h3 { margin-left: 50px; }
         }
+        
+        /* DEMO BİLGİ KUTUSU */
+        .demo-info { margin-top:15px; padding:15px; background: rgba(255,255,255,0.9); border-radius:8px; font-size:12px; color:#334155; line-height:1.6; }
+        .demo-info code { background: #e2e8f0; padding:2px 6px; border-radius:4px; font-weight:700; color:#0f172a; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -114,6 +119,13 @@
                 <input type="password" id="sifre" class="form-control" placeholder="Şifre" required>
                 <button type="submit" class="btn">Giriş Yap</button>
             </form>
+            
+            <div class="demo-info">
+                <strong>DENEME HESAPLARI:</strong><br>
+                Yönetici: <code onclick="fillLogin('5555555555','admin')">5555555555</code> / <code onclick="fillLogin('5555555555','admin')">admin</code><br>
+                Sakin (A Blok): <code onclick="fillLogin('5001234567','1234')">5001234567</code> / <code onclick="fillLogin('5001234567','1234')">1234</code>
+                <div style="margin-top:5px; font-size:10px; opacity:0.7;">(Numaralara tıklayarak otomatik doldurabilirsiniz)</div>
+            </div>
         </div>
     </div>
 
@@ -141,7 +153,7 @@
         </aside>
 
         <main class="main-content">
-            <header class="top-bar"><h3 style="font-size:16px; font-weight:600; color:var(--text-main);">Kontrol Paneli</h3><button onclick="logout()" class="logout-btn"><i class="fa-solid fa-power-off"></i> Çıkış</button></header>
+            <header class="top-bar"><h3 style="font-size:16px; font-weight:600; color:var(--text-main);">Kontrol Paneli (GitHub Modu)</h3><button onclick="logout()" class="logout-btn"><i class="fa-solid fa-power-off"></i> Çıkış</button></header>
             <div class="content-area">
                 
                 <div id="tabGenel">
@@ -170,7 +182,7 @@
                             <div class="card">
                                 <div class="card-header"><span><i class="fa-solid fa-stopwatch" style="margin-right:10px; color:var(--danger);"></i> SLA Durumu</span></div>
                                 <div style="text-align:center; padding:20px;">
-                                    <h1 id="slaSure" style="font-size:3em; color:var(--text-main);">0s</h1>
+                                    <h1 id="slaSure" style="font-size:3em; color:var(--text-main);">4s</h1>
                                     <p style="color:var(--text-sub);">Ortalama Çözüm Süresi</p>
                                 </div>
                             </div>
@@ -228,11 +240,6 @@
                             <button type="submit" class="btn" style="margin-top:15px; background:var(--success);">Sakin Kaydını Tamamla</button>
                         </form>
                     </div>
-                    <div class="card">
-                        <div style="padding:20px; text-align:center; color:var(--text-sub);">
-                            <i class="fa-solid fa-info-circle"></i> Sadece apartman sakinleri kaydedilebilir. Yönetici eklemek için veritabanı erişimi gereklidir.
-                        </div>
-                    </div>
                 </div>
 
                 <div id="tabAdmin" class="hidden">
@@ -266,9 +273,96 @@
     </div>
 
     <script>
-        const API = '/api';
+        // --- SAHTE VERİTABANI VE BACKEND SİMÜLASYONU ---
+        // Bu bölüm API yerine LocalStorage kullanır.
+        
+        const DB = {
+            init: function() {
+                if(!localStorage.getItem('users')) {
+                    const defaultUsers = [
+                        { id: 1, telNo: '5555555555', sifre: 'admin', adSoyad: 'Site Yöneticisi', rol: 'Yonetici' },
+                        { id: 2, telNo: '5001234567', sifre: '1234', adSoyad: 'Ahmet Yılmaz', rol: 'Sakin', blok: 'A', daireNo: 5 }
+                    ];
+                    localStorage.setItem('users', JSON.stringify(defaultUsers));
+                }
+                if(!localStorage.getItem('complaints')) {
+                    // Demo şikayetler
+                    const defaultComplaints = [
+                        { id: 1, userID: 2, tanim: 'Musluk Damlatıyor', tur: 'Daire', oncelik: 'Normal', kategori: 'Sıhhi Tesisat', tarih: new Date().toISOString(), durum: 'Beklemede' },
+                        { id: 2, userID: 2, tanim: 'Koridor Lambası Yanmıyor', tur: 'Genel', oncelik: 'Acil', kategori: 'Elektrik', tarih: new Date(Date.now() - 86400000).toISOString(), durum: 'Cozuldu', birim: 'Teknik Servis', cozumSuresi: 4 }
+                    ];
+                    localStorage.setItem('complaints', JSON.stringify(defaultComplaints));
+                }
+                if(!localStorage.getItem('dues')) {
+                    const defaultDues = [
+                        { id: 1, userID: 2, baslik: 'Aralık Aidatı', miktar: 750, tarih: '2023-12-01', durum: 'Odendi' },
+                        { id: 2, userID: 2, baslik: 'Ocak Aidatı', miktar: 850, tarih: '2024-01-01', durum: 'Odenmedi' }
+                    ];
+                    localStorage.setItem('dues', JSON.stringify(defaultDues));
+                }
+                if(!localStorage.getItem('announcements')) {
+                    localStorage.setItem('announcements', JSON.stringify([{id:1, Baslik:'Hoşgeldiniz', Icerik:'Yeni site yönetim sistemi yayında.', Tarih: new Date()}]));
+                }
+            },
+            getUsers: () => JSON.parse(localStorage.getItem('users')),
+            saveUser: (user) => {
+                const users = DB.getUsers();
+                user.id = Date.now();
+                users.push(user);
+                localStorage.setItem('users', JSON.stringify(users));
+                return user;
+            },
+            getComplaints: () => JSON.parse(localStorage.getItem('complaints')),
+            saveComplaint: (c) => {
+                const list = DB.getComplaints();
+                c.id = Date.now();
+                c.tarih = new Date().toISOString();
+                c.durum = 'Beklemede';
+                list.push(c);
+                localStorage.setItem('complaints', JSON.stringify(list));
+            },
+            updateComplaint: (id, updates) => {
+                const list = DB.getComplaints();
+                const idx = list.findIndex(x => x.id === id);
+                if(idx > -1) {
+                    list[idx] = { ...list[idx], ...updates };
+                    localStorage.setItem('complaints', JSON.stringify(list));
+                }
+            },
+            getDues: () => JSON.parse(localStorage.getItem('dues')),
+            saveDue: (d) => {
+                const list = DB.getDues();
+                d.id = Date.now() + Math.random();
+                d.durum = 'Odenmedi';
+                list.push(d);
+                localStorage.setItem('dues', JSON.stringify(list));
+            },
+            updateDue: (id) => {
+                const list = DB.getDues();
+                const item = list.find(x => x.id === id);
+                if(item) { item.durum = 'Odendi'; localStorage.setItem('dues', JSON.stringify(list)); }
+            },
+            getAnnouncements: () => JSON.parse(localStorage.getItem('announcements')),
+            saveAnnouncement: (a) => {
+                const list = DB.getAnnouncements();
+                list.unshift(a);
+                localStorage.setItem('announcements', JSON.stringify(list));
+            }
+        };
+
+        // Başlangıç verilerini yükle
+        DB.init();
+
+        // --- UYGULAMA MANTIĞI ---
+
         let currentUser = null;
         let selectedLocation = null, selectedPriority = null;
+
+        // Login Helper
+        function fillLogin(tel, pass) {
+            document.getElementById('telNo').value = tel;
+            document.getElementById('sifre').value = pass;
+        }
 
         function toggleSidebar() {
             const sb = document.querySelector('.sidebar');
@@ -288,7 +382,7 @@
             if(tabName === 'genel') {
                 document.getElementById('tabGenel').classList.remove('hidden');
                 document.getElementById('menuGenel').classList.add('active');
-                if(currentUser.rol === 'Yonetici') loadAnalytics(); // Analizleri yükle
+                if(currentUser.rol === 'Yonetici') loadAnalytics();
             } else if(tabName === 'kayit') {
                 document.getElementById('tabKayit').classList.remove('hidden');
                 document.getElementById('menuKayit').classList.add('active');
@@ -309,45 +403,31 @@
             const btn = e.target.querySelector('button');
             const oldText = btn.innerText;
             btn.innerHTML = '<div class="loading-spinner"></div> Giriş...';
+            
             const telNo = document.getElementById('telNo').value;
             const sifre = document.getElementById('sifre').value;
-            try {
-                const res = await fetch(API + '/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({telNo, sifre}) });
-                const data = await res.json();
-                if(res.ok) { currentUser = data.user; initDash(); } else showAlert('loginAlert', data.error, 'error');
-            } catch(e) { showAlert('loginAlert', 'Bağlantı hatası', 'error'); }
-            btn.innerText = oldText;
-        };
-
-        async function adminAddSakin(e) {
-            e.preventDefault();
-            const body = {
-                adSoyad: document.getElementById('newAdSoyad').value,
-                telNo: document.getElementById('newTelNo').value,
-                blok: document.getElementById('newBlok').value,
-                daireNo: document.getElementById('newDaire').value,
-                sifre: document.getElementById('newSifre').value
-            };
-            if(!confirm(body.adSoyad + ' isimli sakin sisteme eklensin mi?')) return;
-            try {
-                const res = await fetch(API + '/admin/sakin-ekle', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
-                const data = await res.json();
-                if(res.ok) {
-                    alert('Sakin başarıyla eklendi!');
-                    document.getElementById('adminRegisterForm').reset();
-                    loadSakinlerForAidat(); 
+            
+            // Local Login Check
+            setTimeout(() => {
+                const users = DB.getUsers();
+                const user = users.find(u => u.telNo === telNo && u.sifre === sifre);
+                
+                if(user) {
+                    currentUser = user;
+                    initDash();
                 } else {
-                    alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+                    showAlert('loginAlert', 'Hatalı telefon veya şifre!', 'error');
                 }
-            } catch(err) { alert('Bağlantı hatası!'); }
-        }
+                btn.innerText = oldText;
+            }, 500); // 0.5sn gecikme efekti
+        };
 
         function initDash() {
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
             document.getElementById('userDisplay').innerText = currentUser.adSoyad;
             let roleInfo = currentUser.rol;
-            if(currentUser.rol === 'Sakin' && currentUser.blok) { roleInfo += ` (${currentUser.blok}/${currentUser.daire})`; }
+            if(currentUser.rol === 'Sakin' && currentUser.blok) { roleInfo += ` (${currentUser.blok}/${currentUser.daireNo})`; }
             document.getElementById('roleDisplay').innerText = roleInfo;
 
             loadAnnouncements();
@@ -355,7 +435,7 @@
                 document.getElementById('adminMenu').classList.remove('hidden');
                 document.getElementById('adminStats').classList.remove('hidden');
                 document.getElementById('addAnnBtn').classList.remove('hidden');
-                document.getElementById('analyticsSection').classList.remove('hidden'); // Analizleri göster
+                document.getElementById('analyticsSection').classList.remove('hidden');
                 loadStats();
                 loadAnalytics();
             } else {
@@ -366,123 +446,258 @@
             }
         }
 
-        // YENİ: ANALİZ GRAFİKLERİNİ ÇİZEN FONKSİYON
-        async function loadAnalytics() {
-            try {
-                const res = await fetch(API + '/analizler');
-                const data = await res.json();
-                
-                // 1. Kategori Pasta Grafiği
-                new Chart(document.getElementById('chartKategori'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: data.kategori.map(d => d.Kategori),
-                        datasets: [{ data: data.kategori.map(d => d.Sayi), backgroundColor: ['#4f46e5', '#ef4444', '#f59e0b', '#10b981', '#6366f1'] }]
-                    },
-                    options: { maintainAspectRatio: false }
-                });
-
-                // 2. Blok Yoğunluğu (Heatmap alternatifi Bar)
-                new Chart(document.getElementById('chartBlok'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.blok.map(d => d.Blok + ' Blok'),
-                        datasets: [{ label: 'Şikayet Sayısı', data: data.blok.map(d => d.Sayi), backgroundColor: '#f59e0b' }]
-                    },
-                    options: { maintainAspectRatio: false, scales: {y: {beginAtZero: true}} }
-                });
-
-                // 3. Personel Performansı
-                new Chart(document.getElementById('chartPersonel'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.personel.map(d => d.Birim || 'Belirsiz'),
-                        datasets: [{ label: 'Ort. Çözüm (Saat)', data: data.personel.map(d => d.OrtSure), backgroundColor: '#10b981' }]
-                    },
-                    options: { indexAxis: 'y', maintainAspectRatio: false }
-                });
-
-                // 4. SLA Durumu
-                const ortSla = data.sla.genelOrtalama ? Math.round(data.sla.genelOrtalama) : 0;
-                document.getElementById('slaSure').innerText = ortSla + ' Saat';
-                document.getElementById('slaSure').style.color = ortSla > 24 ? '#ef4444' : '#10b981';
-
-            } catch(e) { console.error(e); }
+        function adminAddSakin(e) {
+            e.preventDefault();
+            const body = {
+                adSoyad: document.getElementById('newAdSoyad').value,
+                telNo: document.getElementById('newTelNo').value,
+                blok: document.getElementById('newBlok').value,
+                daireNo: document.getElementById('newDaire').value,
+                sifre: document.getElementById('newSifre').value,
+                rol: 'Sakin'
+            };
+            if(!confirm(body.adSoyad + ' isimli sakin sisteme eklensin mi?')) return;
+            
+            DB.saveUser(body);
+            alert('Sakin başarıyla eklendi! (Giriş bilgileri: ' + body.telNo + ' / ' + body.sifre + ')');
+            document.getElementById('adminRegisterForm').reset();
+            loadSakinlerForAidat(); 
         }
 
-        async function loadUserDebt() {
-            const res = await fetch(API + '/aidatlar/ozet');
-            const data = await res.json();
-            document.getElementById('toplamBorc').innerText = data.toplam + ' ₺';
+        // ANALİZ GRAFİKLERİ
+        function loadAnalytics() {
+            const complaints = DB.getComplaints();
+            const users = DB.getUsers();
+            
+            // Veri hazırlama
+            const cats = {}; 
+            const bloks = {};
+            const personel = {};
+            
+            complaints.forEach(c => {
+                // Kategori
+                cats[c.kategori] = (cats[c.kategori] || 0) + 1;
+                // Blok
+                const u = users.find(x => x.id === c.userID);
+                if(u && u.blok) bloks[u.blok] = (bloks[u.blok] || 0) + 1;
+                // Personel
+                if(c.birim) {
+                    if(!personel[c.birim]) personel[c.birim] = { total:0, count:0 };
+                    personel[c.birim].count++;
+                    personel[c.birim].total += (c.cozumSuresi || 4); // Fake süre
+                }
+            });
+
+            // 1. Kategori
+            if(window.chart1) window.chart1.destroy();
+            window.chart1 = new Chart(document.getElementById('chartKategori'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(cats),
+                    datasets: [{ data: Object.values(cats), backgroundColor: ['#4f46e5', '#ef4444', '#f59e0b', '#10b981', '#6366f1'] }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+
+            // 2. Blok
+            if(window.chart2) window.chart2.destroy();
+            window.chart2 = new Chart(document.getElementById('chartBlok'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(bloks).map(k => k + ' Blok'),
+                    datasets: [{ label: 'Şikayet Sayısı', data: Object.values(bloks), backgroundColor: '#f59e0b' }]
+                },
+                options: { maintainAspectRatio: false, scales: {y: {beginAtZero: true}} }
+            });
+
+            // 3. Personel
+            const pLabels = Object.keys(personel);
+            const pData = pLabels.map(k => personel[k].total / personel[k].count);
+            
+            if(window.chart3) window.chart3.destroy();
+            window.chart3 = new Chart(document.getElementById('chartPersonel'), {
+                type: 'bar',
+                data: {
+                    labels: pLabels.length ? pLabels : ['Genel'],
+                    datasets: [{ label: 'Ort. Çözüm (Saat)', data: pLabels.length ? pData : [4], backgroundColor: '#10b981' }]
+                },
+                options: { indexAxis: 'y', maintainAspectRatio: false }
+            });
         }
-        async function loadSakinlerForAidat() {
-            const res = await fetch(API + '/sakinler');
-            const data = await res.json();
+
+        function loadUserDebt() {
+            const dues = DB.getDues().filter(d => d.userID === currentUser.id && d.durum === 'Odenmedi');
+            const total = dues.reduce((acc, curr) => acc + Number(curr.miktar), 0);
+            document.getElementById('toplamBorc').innerText = total + ' ₺';
+        }
+
+        function loadSakinlerForAidat() {
+            const sakinler = DB.getUsers().filter(u => u.rol === 'Sakin');
             const select = document.getElementById('aidatHedef');
             select.innerHTML = '<option value="herkes">HERKES (Tüm Sakinler)</option>';
-            data.forEach(u => { select.innerHTML += `<option value="${u.UserID}">${u.AdSoyad} (${u.Blok}/${u.DaireNo})</option>`; });
+            sakinler.forEach(u => { select.innerHTML += `<option value="${u.id}">${u.adSoyad} (${u.blok}/${u.daireNo})</option>`; });
         }
-        async function addAidat(e) {
+
+        function addAidat(e) {
             e.preventDefault();
-            const body = { hedef: document.getElementById('aidatHedef').value, baslik: document.getElementById('aidatBaslik').value, miktar: document.getElementById('aidatMiktar').value, tarih: document.getElementById('aidatTarih').value };
+            const hedef = document.getElementById('aidatHedef').value;
+            const baslik = document.getElementById('aidatBaslik').value;
+            const miktar = document.getElementById('aidatMiktar').value;
+            const tarih = document.getElementById('aidatTarih').value;
+            
             if(!confirm('Bu borç kaydı oluşturulsun mu?')) return;
-            await fetch(API + '/aidatlar/ekle', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+            
+            const sakinler = DB.getUsers().filter(u => u.rol === 'Sakin');
+            const targets = (hedef === 'herkes') ? sakinler : sakinler.filter(u => u.id == hedef);
+            
+            targets.forEach(u => {
+                DB.saveDue({ userID: u.id, baslik, miktar, tarih, durum: 'Odenmedi' });
+            });
+            
             alert('Borç Eklendi!'); loadAidatlar(); document.getElementById('aidatForm').reset();
         }
-        async function loadAidatlar() {
-            const res = await fetch(API + '/aidatlar/tum');
-            const data = await res.json();
-            document.getElementById('aidatTableBody').innerHTML = data.map(a => `<tr><td><span class="badge badge-${a.Durum === 'Odendi' ? 'odendi' : 'borc'}">${a.Durum}</span></td><td>${a.AdSoyad}<br><small>${a.Blok}/${a.DaireNo}</small></td><td>${a.Baslik}<br><small>${new Date(a.SonOdemeTarihi).toLocaleDateString()}</small></td><td><strong>${a.Miktar} ₺</strong></td><td>${a.Durum === 'Odenmedi' ? `<button onclick="markPaid(${a.AidatID})" class="logout-btn" style="color:green; border-color:green;">Ödendi Yap</button>` : '-'}</td></tr>`).join('');
-        }
-        async function markPaid(id) { if(!confirm('Ödeme alındı olarak işaretlensin mi?')) return;
-        await fetch(API + `/aidatlar/${id}/ode`, { method:'PUT' }); loadAidatlar(); }
 
-        async function loadAnnouncements() {
-            try {
-                const res = await fetch(API + '/duyurular');
-                const data = await res.json();
-                const container = document.getElementById('announcementList');
-                if(data.length === 0) { container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-sub);">Henüz duyuru yok.</div>';
-                return; }
-                container.innerHTML = data.map(d => `<div class="announcement-item"><div class="ann-icon"><i class="fa-solid fa-bullhorn"></i></div><div class="ann-content"><h4>${d.Baslik}</h4><p>${d.Icerik}</p><span class="ann-date">${new Date(d.Tarih).toLocaleString('tr-TR')}</span></div></div>`).join('');
-            } catch(e) {}
+        function loadAidatlar() {
+            const dues = DB.getDues();
+            const users = DB.getUsers();
+            
+            // Join işlemi
+            const joined = dues.map(d => {
+                const u = users.find(x => x.id === d.userID);
+                return { ...d, adSoyad: u ? u.adSoyad : 'Bilinmiyor', blok: u ? u.blok : '-', daireNo: u ? u.daireNo : '-' };
+            }).sort((a,b) => new Date(b.tarih) - new Date(a.tarih));
+
+            document.getElementById('aidatTableBody').innerHTML = joined.map(a => `<tr><td><span class="badge badge-${a.durum === 'Odendi' ? 'odendi' : 'borc'}">${a.durum}</span></td><td>${a.adSoyad}<br><small>${a.blok}/${a.daireNo}</small></td><td>${a.baslik}<br><small>${a.tarih}</small></td><td><strong>${a.miktar} ₺</strong></td><td>${a.durum === 'Odenmedi' ? `<button onclick="markPaid(${a.id})" class="logout-btn" style="color:green; border-color:green;">Ödendi Yap</button>` : '-'}</td></tr>`).join('');
         }
-        async function addAnnouncement() {
+
+        function markPaid(id) { 
+            if(!confirm('Ödeme alındı olarak işaretlensin mi?')) return;
+            DB.updateDue(id); 
+            loadAidatlar(); 
+        }
+
+        function loadAnnouncements() {
+            const data = DB.getAnnouncements();
+            const container = document.getElementById('announcementList');
+            if(data.length === 0) { container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-sub);">Henüz duyuru yok.</div>'; return; }
+            container.innerHTML = data.map(d => `<div class="announcement-item"><div class="ann-icon"><i class="fa-solid fa-bullhorn"></i></div><div class="ann-content"><h4>${d.Baslik}</h4><p>${d.Icerik}</p><span class="ann-date">${new Date(d.Tarih).toLocaleString('tr-TR')}</span></div></div>`).join('');
+        }
+
+        function addAnnouncement() {
             const baslik = prompt("Duyuru Başlığı:");
             if(!baslik) return;
             const icerik = prompt("Duyuru İçeriği:"); if(!icerik) return;
-            await fetch(API + '/duyurular', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({baslik, icerik}) });
+            
+            DB.saveAnnouncement({ Baslik: baslik, Icerik: icerik, Tarih: new Date() });
             alert('Duyuru Yayınlandı!'); loadAnnouncements();
         }
         
-        async function fetchCategories() { if (!selectedLocation || !selectedPriority) return;
-        document.getElementById('problemSection').classList.remove('hidden'); document.getElementById('loadingIndicator').classList.remove('hidden'); document.getElementById('catSelect').classList.add('hidden'); const res = await fetch(API + `/kategoriler?tur=${selectedLocation}&oncelik=${selectedPriority}`); const data = await res.json(); document.getElementById('loadingIndicator').classList.add('hidden'); const sel = document.getElementById('catSelect');
-        sel.classList.remove('hidden'); sel.innerHTML = '<option value="">Lütfen Seçiniz...</option>' + data.map(c => `<option value="${c.KategoriID}">${c.Tanim}</option>`).join('');
+        async function fetchCategories() { 
+            if (!selectedLocation || !selectedPriority) return;
+            document.getElementById('problemSection').classList.remove('hidden'); 
+            document.getElementById('loadingIndicator').classList.remove('hidden'); 
+            document.getElementById('catSelect').classList.add('hidden'); 
+            
+            // Simule edilmiş bekleme
+            setTimeout(() => {
+                document.getElementById('loadingIndicator').classList.add('hidden'); 
+                const sel = document.getElementById('catSelect');
+                sel.classList.remove('hidden');
+                
+                let cats = ['Elektrik', 'Su/Tesisat', 'Temizlik', 'Güvenlik', 'Asansör', 'Peyzaj', 'Diğer'];
+                if(selectedLocation === 'Daire') cats = ['Su/Tesisat', 'Elektrik', 'İnterkom', 'Doğalgaz'];
+                
+                sel.innerHTML = '<option value="">Lütfen Seçiniz...</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            }, 600);
         }
-        async function selectLocation(loc, el) { el.parentElement.querySelectorAll('.radio-tile').forEach(x => x.classList.remove('selected')); el.classList.add('selected'); selectedLocation = loc;
-        document.getElementById('prioritySection').classList.remove('hidden'); if (selectedPriority) await fetchCategories(); }
-        async function selectPriority(prio, el) { el.parentElement.querySelectorAll('.radio-tile').forEach(x => x.classList.remove('selected'));
-        el.classList.add('selected'); selectedPriority = prio; await fetchCategories(); }
-        async function sendComplaint() { const catID = document.getElementById('catSelect').value;
-        if(!catID) return; const btn = document.querySelector('#problemSection .btn'); const oldText = btn.innerHTML; btn.innerHTML = '<div class="loading-spinner"></div> Gönderiliyor...';
-        await fetch(API + '/sikayetler', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({kategoriID: catID}) }); alert('Talebiniz İletildi!'); loadUserComplaints(); document.getElementById('problemSection').classList.add('hidden'); document.getElementById('prioritySection').classList.add('hidden'); document.querySelectorAll('.radio-tile').forEach(x => x.classList.remove('selected'));
-        selectedLocation = null; selectedPriority = null; btn.innerHTML = oldText; }
-        async function loadUserComplaints() { const res = await fetch(API + '/sikayetler/kullanici');
-        const data = await res.json(); document.getElementById('userTableBody').innerHTML = data.map(s => `<tr><td><span class="badge badge-${s.Durum.toLowerCase()}">${s.Durum}</span></td><td>${s.Tanim} ${s.Birim ? `<br><span class="birim-tag"><i class="fa-solid fa-user-gear"></i> ${s.Birim}</span>` : ''}</td></tr>`).join('');
+
+        function selectLocation(loc, el) { 
+            el.parentElement.querySelectorAll('.radio-tile').forEach(x => x.classList.remove('selected')); 
+            el.classList.add('selected'); selectedLocation = loc;
+            document.getElementById('prioritySection').classList.remove('hidden'); 
+            if (selectedPriority) fetchCategories(); 
         }
-        async function loadAdminComplaints() { const res = await fetch(API + '/sikayetler/tum');
-        const data = await res.json(); document.getElementById('adminTableBody').innerHTML = data.map(s => `<tr><td><span class="badge badge-${s.Durum.toLowerCase()}">${s.Durum}</span></td><td><strong>${s.Tanim}</strong><br><small style="opacity:0.7; font-size:12px;">${s.Oncelik}</small> ${s.Birim ? `<div class="birim-tag">📍 ${s.Birim}</div>` : ''}</td><td><strong>${s.AdSoyad}</strong><br>${s.Blok ? `<small style="color:var(--text-sub); font-weight:500;">${s.Blok} Blok / Daire ${s.DaireNo}</small>` : `<small style="color:var(--text-sub);">${s.TelNo}</small>`}</td><td>${s.Durum !== 'Islemde' ? `<button onclick="updStatus(${s.SikayetID}, 'Islemde')" class="logout-btn" style="color:#2563eb; border-color:#2563eb;">İşle</button>` : ''}${s.Durum !== 'Cozuldu' ? `<button onclick="updStatus(${s.SikayetID}, 'Cozuldu')" class="logout-btn" style="color:#059669; border-color:#059669;">Çöz</button>` : ''}</td></tr>`).join('');
+        
+        function selectPriority(prio, el) { 
+            el.parentElement.querySelectorAll('.radio-tile').forEach(x => x.classList.remove('selected'));
+            el.classList.add('selected'); selectedPriority = prio; 
+            fetchCategories(); 
         }
-        async function loadStats() { const res = await fetch(API + '/istatistikler');
-        const s = await res.json(); document.getElementById('statsGrid').innerHTML = `<div class="card" style="padding:20px; text-align:center; border-top:4px solid var(--text-main); margin:0;"><h3>${s.toplam}</h3><small style="color:var(--text-sub);">TOPLAM</small></div><div class="card" style="padding:20px; text-align:center; border-top:4px solid #f59e0b; margin:0;"><h3>${s.beklemede}</h3><small style="color:var(--text-sub);">BEKLEYEN</small></div><div class="card" style="padding:20px; text-align:center; border-top:4px solid #ef4444; margin:0;"><h3>${s.alacak} ₺</h3><small style="color:var(--text-sub);">TOPLAM ALACAK</small></div>`;
+
+        function sendComplaint() { 
+            const cat = document.getElementById('catSelect').value;
+            if(!cat) return; 
+            
+            const btn = document.querySelector('#problemSection .btn'); 
+            const oldText = btn.innerHTML; 
+            btn.innerHTML = '<div class="loading-spinner"></div> Gönderiliyor...';
+            
+            setTimeout(() => {
+                DB.saveComplaint({
+                    userID: currentUser.id,
+                    kategori: cat,
+                    tur: selectedLocation,
+                    oncelik: selectedPriority,
+                    tanim: cat + ' Arızası (' + selectedLocation + ')'
+                });
+                
+                alert('Talebiniz İletildi!'); 
+                loadUserComplaints(); 
+                document.getElementById('problemSection').classList.add('hidden'); 
+                document.getElementById('prioritySection').classList.add('hidden'); 
+                document.querySelectorAll('.radio-tile').forEach(x => x.classList.remove('selected'));
+                selectedLocation = null; selectedPriority = null; 
+                btn.innerHTML = oldText;
+            }, 800);
         }
-        async function updStatus(id, st) { let birim = null;
-        if(st === 'Islemde') { birim = prompt("Hangi Birime Yönlendirilsin?"); if(birim === null) return;
-        } await fetch(API + `/sikayetler/${id}/durum`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({durum: st, birim: birim}) }); loadAdminComplaints(); loadStats();
+
+        function loadUserComplaints() { 
+            const myComplaints = DB.getComplaints().filter(c => c.userID === currentUser.id).reverse();
+            document.getElementById('userTableBody').innerHTML = myComplaints.map(s => `<tr><td><span class="badge badge-${s.durum.toLowerCase()}">${s.durum}</span></td><td>${s.tanim} ${s.birim ? `<br><span class="birim-tag"><i class="fa-solid fa-user-gear"></i> ${s.birim}</span>` : ''}</td></tr>`).join('');
         }
-        async function logout() { await fetch(API + '/logout', { method:'POST' }); location.reload();
+
+        function loadAdminComplaints() { 
+            const complaints = DB.getComplaints();
+            const users = DB.getUsers();
+            
+            // Join
+            const joined = complaints.map(c => {
+                const u = users.find(x => x.id === c.userID);
+                return { ...c, adSoyad: u.adSoyad, blok: u.blok, daireNo: u.daireNo, telNo: u.telNo };
+            }).sort((a,b) => new Date(b.tarih) - new Date(a.tarih));
+
+            document.getElementById('adminTableBody').innerHTML = joined.map(s => `<tr><td><span class="badge badge-${s.durum.toLowerCase()}">${s.durum}</span></td><td><strong>${s.tanim}</strong><br><small style="opacity:0.7; font-size:12px;">${s.oncelik}</small> ${s.birim ? `<div class="birim-tag">📍 ${s.birim}</div>` : ''}</td><td><strong>${s.adSoyad}</strong><br>${s.blok ? `<small style="color:var(--text-sub); font-weight:500;">${s.blok} Blok / Daire ${s.daireNo}</small>` : `<small style="color:var(--text-sub);">${s.telNo}</small>`}</td><td>${s.durum !== 'Islemde' ? `<button onclick="updStatus(${s.id}, 'Islemde')" class="logout-btn" style="color:#2563eb; border-color:#2563eb;">İşle</button>` : ''}${s.durum !== 'Cozuldu' ? `<button onclick="updStatus(${s.id}, 'Cozuldu')" class="logout-btn" style="color:#059669; border-color:#059669;">Çöz</button>` : ''}</td></tr>`).join('');
         }
-        function showAlert(id, msg, type) { document.getElementById(id).innerHTML = `<div class="alert ${type==='error'?'alert-error':'alert-success'}">${msg}</div>`; setTimeout(()=>document.getElementById(id).innerHTML='', 3000);
+
+        function loadStats() { 
+            const complaints = DB.getComplaints();
+            const dues = DB.getDues().filter(d => d.durum === 'Odenmedi');
+            
+            const toplam = complaints.length;
+            const beklemede = complaints.filter(c => c.durum === 'Beklemede' || c.durum === 'Islemde').length;
+            const alacak = dues.reduce((acc, c) => acc + Number(c.miktar), 0);
+
+            document.getElementById('statsGrid').innerHTML = `<div class="card" style="padding:20px; text-align:center; border-top:4px solid var(--text-main); margin:0;"><h3>${toplam}</h3><small style="color:var(--text-sub);">TOPLAM TALEP</small></div><div class="card" style="padding:20px; text-align:center; border-top:4px solid #f59e0b; margin:0;"><h3>${beklemede}</h3><small style="color:var(--text-sub);">AÇIK İŞLER</small></div><div class="card" style="padding:20px; text-align:center; border-top:4px solid #ef4444; margin:0;"><h3>${alacak} ₺</h3><small style="color:var(--text-sub);">TOPLAM ALACAK</small></div>`;
+        }
+
+        function updStatus(id, st) { 
+            let birim = null;
+            if(st === 'Islemde') { 
+                birim = prompt("Hangi Birime Yönlendirilsin? (Örn: Teknik Servis, Bahçıvan)"); 
+                if(birim === null) return;
+            } 
+            DB.updateComplaint(id, { durum: st, birim: birim });
+            loadAdminComplaints(); 
+            loadStats();
+        }
+
+        function logout() { 
+            location.reload();
+        }
+
+        function showAlert(id, msg, type) { 
+            document.getElementById(id).innerHTML = `<div class="alert ${type==='error'?'alert-error':'alert-success'}">${msg}</div>`; 
+            setTimeout(()=>document.getElementById(id).innerHTML='', 3000);
         }
     </script>
 </body>
