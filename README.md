@@ -40,7 +40,7 @@ Projeyi kendi bilgisayarınızda çalıştırmak isterseniz:
 
 1.  Repoyu klonlayın:
     ```bash
-    git clone [https://github.com/KULLANICIADINIZ/site-yonetim-sistemi.git](https://github.com/KULLANICIADINIZ/site-yonetim-sistemi.git)
+    git clone [https://github.com/BATosi7/site-yonetim-sistemi.git](https://github.com/BATosi7/site-yonetim-sistemi.git)
     ```
 2.  Gerekli paketleri yükleyin:
     ```bash
